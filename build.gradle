@@ -1,0 +1,106 @@
+group 'co.com.yrm.qa.proyecto'
+version '1.0'
+
+defaultTasks 'clean', 'test', 'aggregate'
+
+repositories {
+    jcenter()
+    mavenCentral()
+
+}
+
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "net.serenity-bdd:serenity-gradle-plugin:3.2.0"
+    }
+}
+
+
+
+apply plugin: 'idea'
+apply plugin: 'groovy'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: "net.serenity-bdd.serenity-gradle-plugin"
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+
+
+
+ext {
+    serenityCoreVersion = '4.1.0'
+    serenityCucumberVersion = '4.1.0'
+    junitVersion = '4.13.2'
+    assertJVersion = '3.23.1'
+    lombok = '1.18.24'
+}
+
+compileJava {
+    sourceCompatibility = 11
+    targetCompatibility = 11
+}
+
+dependencies {
+    implementation "net.serenity-bdd:serenity-screenplay-webdriver:$rootProject.ext.serenityCoreVersion"
+    implementation "org.projectlombok:lombok:${lombok}"
+    annotationProcessor "org.projectlombok:lombok:${lombok}"
+    //
+    implementation "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
+    implementation "net.serenity-bdd:serenity-cucumber:${serenityCucumberVersion}"
+    implementation "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}"
+    implementation "junit:junit:${junitVersion}"
+    implementation 'com.codoid.products:fillo:1.21'
+    implementation group: 'jline', name: 'jline', version: '2.13'
+    implementation 'org.postgresql:postgresql:42.2.0'
+    implementation (group: 'net.serenity-bdd', name: 'serenity-screenplay-rest', version: '4.1.0'){
+        exclude group: 'org.apache.groovy', module: 'groovy-xml'
+    }
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.239'
+
+    testImplementation "net.serenity-bdd:serenity-core:${serenityCoreVersion}",
+            "net.serenity-bdd:serenity-cucumber:${serenityCucumberVersion}",
+            "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}",
+            "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}",
+            "net.serenity-bdd:serenity-ensure:${serenityCoreVersion}",
+            'org.junit.platform:junit-platform-launcher:1.9.0',
+            'org.junit.jupiter:junit-jupiter-engine:5.9.0',
+            'org.junit.vintage:junit-vintage-engine:5.9.0',
+            "junit:junit:${junitVersion}",
+            "org.assertj:assertj-core:${assertJVersion}"
+
+    testImplementation 'net.serenity-bdd:serenity-junit:2.0.17'
+    implementation('org.apache.hadoop:hadoop-core:1.2.1') {
+        exclude group: 'org.codehaus.jackson', module: 'jackson-mapper-asl'
+    }
+
+}
+
+
+
+
+
+test {
+
+    //Sigue ejecutando aunque falle un caso
+    gradle.startParameter.continueOnFailure = true
+
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
+    //Habilitar Ejecuciones Paralelas
+    //maxParallelForks = Runtime.runtime.availableProcessors()
+
+}
+
+tasks.withType (JavaCompile) {
+    compileJava.options.encoding = 'UTF-8'
+    compileTestJava.options.encoding = 'UTF-8'
+}
+
+test.finalizedBy(aggregate)
